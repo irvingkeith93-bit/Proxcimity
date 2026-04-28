@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proxcimity | Tap. Connect. Grow.</title>
+  <meta name="description" content="Proxcimity is a private, local-first business networking app powered by Bluetooth proximity and real in-person connections." />
+
+  <style>
+    :root {
+      --sand: #f7c982;
+      --sand-light: #ffe4b0;
+      --sand-deep: #d99b52;
+      --foam: #f9fff8;
+      --aqua: #13d3d8;
+      --turquoise: #00aab5;
+      --ocean: #005f83;
+      --deep: #021f3f;
+      --navy: #06192e;
+      --orange: #ff7a18;
+      --sun: #ffb03a;
+      --glass: rgba(255,255,255,0.16);
+      --glass-border: rgba(255,255,255,0.28);
+      --text: #f7fbff;
+      --ink: #10243b;
+      --muted: rgba(247,251,255,.74);
+      --shadow: 0 28px 80px rgba(0, 28, 57, .36);
+      --radius: 34px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text);
+      background: var(--deep);
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(250px, 31vw) 1fr;
+      isolation: isolate;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 81% 17%, rgba(19,211,216,.35), transparent 21rem),
+        linear-gradient(118deg, var(--sand-light) 0%, var(--sand) 24%, #fff1d0 31%, var(--turquoise) 42%, var(--ocean) 62%, var(--deep) 100%);
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: -12vh 52% -12vh 18%;
+      background:
+        radial-gradient(ellipse at 50% 12%, rgba(255,255,255,.95), transparent 18%),
+        radial-gradient(ellipse at 50% 32%, rgba(255,255,255,.85), transparent 15%),
+        radial-gradient(ellipse at 48% 52%, rgba(255,255,255,.76), transparent 16%),
+        radial-gradient(ellipse at 53% 72%, rgba(255,255,255,.9), transparent 15%),
+        radial-gradient(ellipse at 50% 91%, rgba(255,255,255,.72), transparent 16%);
+      filter: blur(13px);
+      opacity: .72;
+      transform: rotate(-3deg);
+      z-index: -1;
+      animation: foamPulse 8s ease-in-out infinite alternate;
+    }
+
+    .page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.13), transparent 27%, rgba(255,255,255,.04) 65%, transparent),
+        repeating-linear-gradient(160deg, rgba(255,255,255,.05) 0 1px, transparent 1px 22px);
+      mix-blend-mode: soft-light;
+      opacity: .52;
+      z-index: 0;
+    }
+
+    @keyframes foamPulse {
+      from { transform: translateX(-10px) rotate(-3deg) scaleY(1); }
+      to { transform: translateX(28px) rotate(-1deg) scaleY(1.03); }
+    }
+
+    .sand-panel {
+      position: relative;
+      min-height: 100vh;
+      padding: 34px 26px;
+      color: var(--ink);
+      z-index: 2;
+    }
+
+    .sand-panel::before,
+    .sand-panel::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(135, 82, 27, .12);
+      filter: blur(12px);
+      z-index: -1;
+    }
+
+    .sand-panel::before {
+      width: 180px;
+      height: 180px;
+      left: -88px;
+      top: 11%;
+    }
+
+    .sand-panel::after {
+      width: 230px;
+      height: 230px;
+      left: -130px;
+      bottom: 4%;
+    }
+
+    .hamburger {
+      width: 50px;
+      height: 50px;
+      border: 1px solid rgba(16,36,59,.14);
+      border-radius: 18px;
+      background: rgba(255,255,255,.28);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(91,62,21,.11);
+      transition: transform .25s ease, background .25s ease;
+    }
+
+    .hamburger:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,.42);
+    }
+
+    .hamburger span,
+    .hamburger span::before,
+    .hamburger span::after {
+      display: block;
+      width: 24px;
+      height: 3px;
+      border-radius: 99px;
+      background: var(--ink);
+      position: relative;
+      transition: .3s ease;
+    }
+
+    .hamburger span::before,
+    .hamburger span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+
+    .hamburger span::before { top: -8px; }
+    .hamburger span::after { top: 8px; }
+
+    body.menu-open .hamburger span { background: transparent; }
+    body.menu-open .hamburger span::before { transform: rotate(45deg); top: 0; }
+    body.menu-open .hamburger span::after { transform: rotate(-45deg); top: 0; }
+
+    .nav-menu {
+      margin-top: clamp(54px, 8vh, 94px);
+      display: grid;
+      gap: clamp(28px, 5vh, 60px);
+      max-width: 230px;
+      transform: translateX(-18px);
+      opacity: .92;
+      transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s ease;
+    }
+
+    body.menu-open .nav-menu {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .nav-button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font: 800 clamp(1rem, 2vw, 1.25rem)/1.1 inherit;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+      letter-spacing: -.02em;
+    }
+
+    .nav-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      color: var(--ink);
+      background: rgba(255,255,255,.22);
+      box-shadow: inset 0 0 0 1px rgba(16,36,59,.08);
+      transition: .3s ease;
+    }
+
+    .nav-button:hover .nav-icon,
+    .nav-button.active .nav-icon {
+      color: #fff;
+      background: linear-gradient(135deg, var(--orange), var(--sun));
+      transform: translateX(8px) rotate(-3deg);
+    }
+
+    .ocean-panel {
+      position: relative;
+      min-height: 100vh;
+      padding: 34px clamp(24px, 6vw, 86px) 28px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      min-height: 70px;
+    }
+
+    .brand-name {
+      color: white;
+      text-decoration: none;
+      letter-spacing: .22em;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 0 8px 22px rgba(0,0,0,.2);
+      font-size: .9rem;
+    }
+
+    .content-shell {
+      position: relative;
+      width: min(780px, 100%);
+      margin-top: clamp(32px, 8vh, 92px);
+      margin-left: clamp(0px, 4vw, 48px);
+    }
+
+    .content-card {
+      position: relative;
+      min-height: 560px;
+      padding: clamp(26px, 5vw, 54px);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255,255,255,.17), rgba(255,255,255,.06));
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(22px);
+    }
+
+    .content-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 -22%;
+      width: 45%;
+      background: linear-gradient(90deg, rgba(255,255,255,.5), rgba(255,255,255,.12), transparent);
+      clip-path: polygon(0 0, 100% 16%, 74% 38%, 100% 60%, 70% 82%, 100% 100%, 0 100%);
+      opacity: .3;
+      animation: surge 7s ease-in-out infinite alternate;
+    }
+
+    @keyframes surge {
+      from { transform: translateX(-18px); opacity: .24; }
+      to { transform: translateX(42px); opacity: .42; }
+    }
+
+    .section {
+      display: none;
+      position: relative;
+      z-index: 1;
+      animation: openWave .52s cubic-bezier(.2,.85,.15,1) both;
+    }
+
+    .section.active { display: block; }
+
+    @keyframes openWave {
+      from {
+        opacity: 0;
+        transform: translateX(-40px) scale(.985);
+        clip-path: ellipse(0% 100% at 0% 50%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        clip-path: ellipse(145% 145% at 0% 50%);
+      }
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.12);
+      color: var(--foam);
+      font-weight: 700;
+      font-size: .83rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2 {
+      margin: 22px 0 18px;
+      letter-spacing: -.065em;
+      line-height: .93;
+    }
+
+    h1 {
+      font-size: clamp(3.3rem, 7.6vw, 7.4rem);
+      max-width: 720px;
+    }
+
+    h2 {
+      font-size: clamp(2.4rem, 5.5vw, 5.2rem);
+      max-width: 700px;
+    }
+
+    .orange { color: #ffb66d; }
+    .aqua { color: #6ff8ff; }
+
+    p {
+      color: var(--muted);
+      font-size: clamp(1rem, 1.55vw, 1.18rem);
+      line-height: 1.72;
+      max-width: 650px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 34px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(255,255,255,.28);
+      color: white;
+      text-decoration: none;
+      padding: 15px 20px;
+      border-radius: 17px;
+      font-weight: 850;
+      background: rgba(255,255,255,.1);
+      box-shadow: 0 18px 40px rgba(0,0,0,.16);
+      transition: .25s ease;
+    }
+
+    .cta.primary {
+      background: linear-gradient(135deg, var(--orange), var(--sun));
+      border: 0;
+      color: white;
+    }
+
+    .cta:hover {
+      transform: translateY(-3px);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 34px;
+    }
+
+    .mini-card {
+      padding: 22px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.11);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .mini-card b {
+      display: block;
+      margin-bottom: 8px;
+      color: white;
+      font-size: 1.05rem;
+    }
+
+    .mini-card small {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .steps {
+      display: grid;
+      gap: 22px;
+      margin-top: 30px;
+      counter-reset: step;
+    }
+
+    .step {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .step::before {
+      content: counter(step, decimal-leading-zero);
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(111,248,255,.35), rgba(255,122,24,.45));
+      border: 1px solid rgba(255,255,255,.28);
+      font-weight: 900;
+    }
+
+    .step h3 {
+      margin: 0 0 4px;
+      font-size: 1.22rem;
+    }
+
+    .step p {
+      margin: 0;
+      font-size: .98rem;
+    }
+
+    .price-card {
+      margin-top: 28px;
+      max-width: 520px;
+      padding: 28px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255,122,24,.26), rgba(19,211,216,.14));
+      border: 1px solid rgba(255,255,255,.24);
+    }
+
+    .price-card strong {
+      font-size: 3rem;
+      letter-spacing: -.06em;
+    }
+
+    .legal-box {
+      margin-top: 28px;
+      padding: 26px;
+      border-radius: 28px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+
+    .legal-box p {
+      font-size: .95rem;
+      line-height: 1.65;
+      margin-bottom: 16px;
+    }
+
+    .footer {
+      margin-top: auto;
+      padding-top: 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 20px;
+      color: rgba(255,255,255,.72);
+      font-size: .9rem;
+    }
+
+    .footer a {
+      color: rgba(255,255,255,.78);
+      text-decoration: none;
+    }
+
+    .floating-palm {
+      position: absolute;
+      right: 5vw;
+      bottom: 18vh;
+      font-size: clamp(3rem, 7vw, 7rem);
+      opacity: .15;
+      filter: blur(.2px);
+      animation: palmSway 4.5s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes palmSway {
+      to { transform: rotate(5deg) translateY(-10px); }
+    }
+
+    @media (max-width: 880px) {
+      .page { grid-template-columns: 1fr; }
+
+      .sand-panel {
+        min-height: auto;
+        padding-bottom: 14px;
+      }
+
+      .nav-menu {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: none;
+        gap: 18px;
+        margin-top: 28px;
+      }
+
+      .nav-button {
+        font-size: .92rem;
+        grid-template-columns: 36px 1fr;
+        gap: 10px;
+      }
+
+      .nav-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .ocean-panel {
+        min-height: auto;
+      }
+
+      .brand-name {
+        font-size: .78rem;
+      }
+
+      .content-shell {
+        margin-top: 18px;
+        margin-left: 0;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body class="menu-open">
+  <main class="page">
+    <aside class="sand-panel" aria-label="Primary navigation">
+      <button class="hamburger" id="menuToggle" aria-label="Open and close menu" aria-expanded="true">
+        <span></span>
+      </button>
+
+      <nav class="nav-menu">
+        <button class="nav-button active" data-section="home">
+          <span class="nav-icon">⌂</span>
+          <span>Home</span>
+        </button>
+
+        <button class="nav-button" data-section="connect">
+          <span class="nav-icon">⌁</span>
+          <span>Tap to Connect</span>
+        </button>
+
+        <button class="nav-button" data-section="credits">
+          <span class="nav-icon">◎</span>
+          <span>Credits</span>
+        </button>
+
+        <button class="nav-button" data-section="pro">
+          <span class="nav-icon">✦</span>
+          <span>Pro</span>
+        </button>
+
+        <button class="nav-button" data-section="privacy">
+          <span class="nav-icon">◈</span>
+          <span>Privacy</span>
+        </button>
+
+        <button class="nav-button" data-section="agreement">
+          <span class="nav-icon">§</span>
+          <span>User Agreement</span>
+        </button>
+
+        <button class="nav-button" data-section="contact">
+          <span class="nav-icon">✉</span>
+          <span>Contact</span>
+        </button>
+      </nav>
+    </aside>
+
+    <section class="ocean-panel">
+      <div class="topbar">
+        <a class="brand-name" href="#home" aria-label="Proxcimity home">Proxcimity</a>
+      </div>
+
+      <div class="content-shell">
+        <article class="content-card">
+          <section class="section active" id="home">
+            <div class="eyebrow">Bluetooth-powered networking</div>
+
+            <h1>Tap. <span class="aqua">Connect.</span><br />Earn. <span class="orange">Grow.</span></h1>
+
+            <p>
+              Proxcimity turns real-world business introductions into instant, private, in-person connections.
+              Tap iPhones, earn credits, check in at events, and use your network with purpose.
+            </p>
+
+            <div class="cta-row">
+              <a href="#contact" class="cta primary" data-jump="contact">Get Launch Updates →</a>
+              <a href="#connect" class="cta" data-jump="connect">See How It Works</a>
+            </div>
+
+            <div class="feature-grid">
+              <div class="mini-card">
+                <b>Local-first</b>
+                <small>No cloud profile vault. Connection data stays locally on users’ phones.</small>
+              </div>
+
+              <div class="mini-card">
+                <b>Built for proximity</b>
+                <small>Designed for in-person networking, conferences, meetups, and business events.</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="connect">
+            <div class="eyebrow">Wave one</div>
+
+            <h2>Business networking, without the awkward search.</h2>
+
+            <p>
+              When two users meet, they tap their iPhones to connect through Bluetooth proximity.
+              The moment is physical, intentional, and fast.
+            </p>
+
+            <div class="steps">
+              <div class="step">
+                <div>
+                  <h3>Meet in person</h3>
+                  <p>Start with a real-world introduction, not a random cold message.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div>
+                  <h3>Tap phones</h3>
+                  <p>Bluetooth proximity helps confirm the connection nearby.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div>
+                  <h3>Keep moving</h3>
+                  <p>The connection is made quickly so users can get back to the room.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="credits">
+            <div class="eyebrow">Wave two</div>
+
+            <h2>Earn credits by showing up.</h2>
+
+            <p>
+              Credits reward the actions that make business networking valuable: connecting with real people,
+              checking in to events, and subscribing to Pro.
+            </p>
+
+            <div class="feature-grid">
+              <div class="mini-card">
+                <b>Connect</b>
+                <small>Earn credits for verified in-person connections.</small>
+              </div>
+
+              <div class="mini-card">
+                <b>Check in</b>
+                <small>Earn credits for attending and checking in to events.</small>
+              </div>
+
+              <div class="mini-card">
+                <b>Message</b>
+                <small>Use credits to message people you are not connected to yet.</small>
+              </div>
+
+              <div class="mini-card">
+                <b>Promote</b>
+                <small>Use credits to post a banner ad from a file, PDF, or other advertisement asset for selected time windows.</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="pro">
+            <div class="eyebrow">Pro tier</div>
+
+            <h2>More reach for serious networkers.</h2>
+
+            <p>
+              Pro is for users who want more visibility, more credits, and more ways to turn
+              in-person momentum into business opportunity.
+            </p>
+
+            <div class="price-card">
+              <strong>Pro</strong>
+              <p>
+                Unlock a stronger credit flow, premium visibility, and faster access to messaging
+                and promotional placements.
+              </p>
+
+              <a href="#contact" class="cta primary" data-jump="contact">Go Pro →</a>
+            </div>
+          </section>
+
+          <section class="section" id="privacy">
+            <div class="eyebrow">Private by design</div>
+
+            <h2>No stored data. Local-first connection control.</h2>
+
+            <p>
+              Proxcimity is designed around local device storage. Users keep their connection experience
+              on their phones, making the app feel lighter, faster, and more private.
+            </p>
+
+            <div class="feature-grid">
+              <div class="mini-card">
+                <b>Local storage</b>
+                <small>Connection data remains on user devices.</small>
+              </div>
+
+              <div class="mini-card">
+                <b>Bluetooth layer</b>
+                <small>Built around in-person proximity, not scraping or passive discovery.</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="agreement">
+            <div class="eyebrow">User Agreement</div>
+
+            <h2>Terms of use for Proxcimity.</h2>
+
+            <div class="legal-box">
+              <p>
+                By downloading, accessing, or using Proxcimity, you agree to the terms, features,
+                functions, and conditions included in the use of the application.
+              </p>
+
+              <p>
+                Proxcimity is a Bluetooth-based business networking tool designed for in-person connections,
+                event check-ins, credit-based messaging, Pro subscriptions, and promotional banner placements.
+              </p>
+
+              <p>
+                Users may earn credits by connecting with other users, checking in to events, and subscribing
+                to Pro. Credits may be used to message users outside of a direct connection and to post banner
+                advertisements using files, PDFs, or other supported file types for selected amounts of time.
+              </p>
+
+              <p>
+                Proxcimity is designed to operate locally on users’ phones. The app does not store user data
+                externally, and connection activity is intended to remain local to user devices.
+              </p>
+
+              <p>
+                <strong>Waiver of Liability:</strong> By using Proxcimity, users waive any and all rights to
+                pursue legal action against the developer, owner, Irving Industries LLC, affiliates, employees,
+                contractors, or related parties for any reason connected to use of the app, including but not
+                limited to app functionality, Bluetooth connection activity, user interactions, credit usage,
+                event check-ins, messaging, advertisements, uploaded files, promotional placements, or outcomes
+                resulting from connections made through the app.
+              </p>
+
+              <p>
+                By using the app, users acknowledge and consent to all included features, limitations, risks,
+                and use conditions associated with Proxcimity.
+              </p>
+
+              <p>
+                <strong>Support:</strong><br />
+                <a class="cta" href="mailto:irvingindustries@outlook.com">irvingindustries@outlook.com</a>
+              </p>
+            </div>
+          </section>
+
+          <section class="section" id="contact">
+            <div class="eyebrow">Launch updates</div>
+
+            <h2>Elevate your connections effortlessly.</h2>
+
+            <p>
+              Want updates for launch, Pro access, or event partnerships?
+              Contact Proxcimity support below.
+            </p>
+
+            <div class="cta-row">
+              <a class="cta primary" href="mailto:irvingindustries@outlook.com?subject=Proxcimity%20Launch%20Updates">
+                Email Support →
+              </a>
+
+              <a class="cta" href="https://proxcimity.com">
+                Visit Current Site
+              </a>
+            </div>
+          </section>
+        </article>
+      </div>
+
+      <div class="floating-palm">🌴</div>
+
+      <footer class="footer">
+        <div>
+          © 2026 Proxcimity. All rights reserved.<br />
+          Proxcimity is owned by Irving Industries LLC
+        </div>
+
+        <a href="mailto:irvingindustries@outlook.com">
+          irvingindustries@outlook.com
+        </a>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    const body = document.body;
+    const toggle = document.getElementById('menuToggle');
+    const buttons = document.querySelectorAll('.nav-button');
+    const sections = document.querySelectorAll('.section');
+    const jumps = document.querySelectorAll('[data-jump]');
+
+    function setSection(id) {
+      buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.section === id));
+      sections.forEach(section => section.classList.toggle('active', section.id === id));
+      history.replaceState(null, '', '#' + id);
+    }
+
+    toggle.addEventListener('click', () => {
+      body.classList.toggle('menu-open');
+      toggle.setAttribute('aria-expanded', body.classList.contains('menu-open'));
+    });
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        body.classList.add('menu-open');
+        setSection(button.dataset.section);
+      });
+    });
+
+    jumps.forEach(link => {
+      link.addEventListener('click', event => {
+        const id = link.dataset.jump;
+        if (id) {
+          event.preventDefault();
+          setSection(id);
+        }
+      });
+    });
+
+    const start = location.hash.replace('#', '');
+    if ([...sections].some(section => section.id === start)) setSection(start);
+  </script>
+</body>
+</html>
